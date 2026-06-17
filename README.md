@@ -1,6 +1,15 @@
 # ⚒️ PromptFoundry Local
 
+[![Live demo](https://img.shields.io/badge/Live_demo-nagayu.github.io-00c2ff?style=for-the-badge)](https://nagayu.github.io/prompt-foundry-local/)
+&nbsp;![100% Local](https://img.shields.io/badge/100%25-on--device-2dd4bf?style=for-the-badge)
+&nbsp;![Cost](https://img.shields.io/badge/API_cost-%240-ff8a3d?style=for-the-badge)
+&nbsp;![License](https://img.shields.io/badge/license-MIT-94a3b8?style=for-the-badge)
+
+[![PromptFoundry Local](./og-image.png)](https://nagayu.github.io/prompt-foundry-local/)
+
 **Forge perfect AI prompts from a handful of words — 100% in your browser. Zero servers. Zero API cost. Zero data leakage.**
+
+> **▶ Try it live:** **https://nagayu.github.io/prompt-foundry-local/** — opens in your browser, caches the model once, then runs offline.
 
 PromptFoundry Local reads your loose keywords or bullet points, *predicts the product or intent you actually want*, and casts three production-grade prompts:
 
