@@ -1,0 +1,12 @@
+# Locally-bundled model weights (large; fetched via ./download-model.sh)
+/models/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
+
+# Dependencies (none required — this app is dependency-free)
+node_modules/

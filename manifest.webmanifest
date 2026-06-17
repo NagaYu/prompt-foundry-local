@@ -1,0 +1,17 @@
+{
+  "name": "PromptFoundry Local",
+  "short_name": "PromptFoundry",
+  "description": "Forge perfect AI prompts from a few words — 100% in your browser. Zero servers, zero API cost, zero data leakage.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#070a12",
+  "theme_color": "#070a12",
+  "lang": "ja",
+  "categories": ["productivity", "utilities", "developer"],
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

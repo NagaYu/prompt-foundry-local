@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a0f1c"/>
+      <stop offset="1" stop-color="#121a30"/>
+    </linearGradient>
+    <linearGradient id="forge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7df9ff"/>
+      <stop offset="0.5" stop-color="#00c2ff"/>
+      <stop offset="1" stop-color="#ff6a00"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.6">
+      <stop offset="0" stop-color="#00c2ff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#00c2ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="112" fill="url(#glow)"/>
+  <rect x="6" y="6" width="500" height="500" rx="108" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
+
+  <!-- Anvil -->
+  <g fill="url(#forge)">
+    <path d="M150 300 h150 c0 26 -18 40 -44 44 l0 18 h40 v22 H156 v-22 h40 l0 -18 c-26 -4 -46 -18 -46 -44 z" opacity="0.95"/>
+    <path d="M132 268 h196 c10 0 18 8 18 18 v6 c0 6 -5 11 -11 11 H125 c-6 0 -11 -5 -11 -11 v-6 c0 -10 8 -18 18 -18 z"/>
+  </g>
+
+  <!-- Hammer striking -->
+  <g transform="rotate(-32 300 190)">
+    <rect x="292" y="120" width="20" height="150" rx="10" fill="#cfe9ff"/>
+    <rect x="250" y="96" width="104" height="48" rx="14" fill="url(#forge)"/>
+  </g>
+
+  <!-- Sparks -->
+  <g fill="#ffb454">
+    <circle cx="232" cy="250" r="7"/>
+    <circle cx="206" cy="232" r="4"/>
+    <circle cx="262" cy="226" r="5"/>
+    <circle cx="190" cy="258" r="3"/>
+  </g>
+</svg>

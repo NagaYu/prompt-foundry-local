@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ja" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PromptFoundry Local — 100% Local AI Prompt Forge</title>
+  <meta name="description" content="Forge perfect AI prompts from a few words. Runs entirely in your browser via WebGPU. Zero servers, zero API cost, zero data leaks." />
+
+  <!-- PWA / installable -->
+  <meta name="theme-color" content="#070a12" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PromptFoundry" />
+
+  <!-- Open Graph / social preview -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="PromptFoundry Local — 100% Local AI Prompt Forge" />
+  <meta property="og:description" content="Forge perfect AI prompts from a few words — 100% in your browser. Zero servers, zero API cost, zero data leakage." />
+  <meta property="og:image" content="./icon.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="PromptFoundry Local" />
+  <meta name="twitter:description" content="Forge perfect AI prompts on-device. $0 to run, 0% data leakage." />
+  <meta name="twitter:image" content="./icon.svg" />
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            ink:    { 950: '#070a12', 900: '#0a0f1c', 850: '#0e1426', 800: '#121a30', 700: '#1b2542' },
+            forge:  { 300: '#7df9ff', 400: '#34e0ff', 500: '#00c2ff', 600: '#0090d8' },
+            ember:  { 400: '#ffb454', 500: '#ff8a3d', 600: '#ff6a00' },
+            mint:   { 400: '#5eead4', 500: '#2dd4bf' }
+          },
+          fontFamily: {
+            sans: ['ui-sans-serif','system-ui','-apple-system','"Segoe UI"','"Hiragino Sans"','"Noto Sans JP"','"Noto Sans Arabic"','"Noto Sans"','sans-serif'],
+            mono: ['ui-monospace','"SF Mono"','"JetBrains Mono"','Menlo','monospace']
+          },
+          boxShadow: {
+            glow: '0 0 0 1px rgba(0,194,255,.18), 0 8px 40px -8px rgba(0,194,255,.35)',
+            ember: '0 0 0 1px rgba(255,138,61,.25), 0 8px 40px -10px rgba(255,138,61,.35)'
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root { color-scheme: dark; }
+    html, body { background: #070a12; }
+    body {
+      background-image:
+        radial-gradient(1200px 600px at 85% -10%, rgba(0,194,255,.10), transparent 60%),
+        radial-gradient(900px 500px at 10% 110%, rgba(255,138,61,.08), transparent 55%),
+        linear-gradient(180deg, #070a12 0%, #080c16 100%);
+      min-height: 100vh;
+    }
+    /* Subtle animated grid */
+    .grid-bg::before {
+      content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: radial-gradient(circle at 50% 30%, black, transparent 75%);
+    }
+    .glass {
+      background: linear-gradient(180deg, rgba(18,26,48,.72), rgba(10,15,28,.72));
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,.07);
+    }
+    .glass-soft {
+      background: rgba(14,20,38,.55);
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .forge-text {
+      background: linear-gradient(92deg, #7df9ff 0%, #34e0ff 40%, #ffb454 100%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .btn-forge {
+      background: linear-gradient(95deg, #00c2ff, #0090d8 55%, #ff6a00);
+      transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+    }
+    .btn-forge:hover { filter: brightness(1.08); box-shadow: 0 10px 38px -8px rgba(0,194,255,.55); }
+    .btn-forge:active { transform: translateY(1px) scale(.997); }
+    .btn-forge:disabled { filter: grayscale(.5) brightness(.7); cursor: not-allowed; box-shadow: none; }
+
+    /* Progress shimmer */
+    .progress-track { background: rgba(255,255,255,.06); }
+    .progress-bar { background: linear-gradient(90deg, #00c2ff, #7df9ff, #ffb454); background-size: 200% 100%; animation: flow 2.2s linear infinite; transition: width .25s ease; }
+    @keyframes flow { to { background-position: -200% 0; } }
+
+    .pulse-dot { animation: pulse 1.3s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity:.35; transform: scale(.85);} 50% { opacity:1; transform: scale(1.15);} }
+
+    .blink::after { content:"▍"; margin-left:2px; animation: blink 1s step-end infinite; color:#34e0ff; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* Scrollbar */
+    *::-webkit-scrollbar { width: 9px; height: 9px; }
+    *::-webkit-scrollbar-thumb { background: rgba(0,194,255,.25); border-radius: 99px; }
+    *::-webkit-scrollbar-track { background: transparent; }
+    textarea { resize: vertical; }
+    [dir="rtl"] .flip-x { transform: scaleX(-1); }
+    .fade-in { animation: fade .4s ease both; }
+    @keyframes fade { from { opacity:0; transform: translateY(6px);} to { opacity:1; transform:none;} }
+  </style>
+</head>
+
+<body class="grid-bg text-slate-200 font-sans antialiased">
+  <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 py-5">
+
+    <!-- ===================== HEADER ===================== -->
+    <header class="glass rounded-2xl px-5 py-4 mb-5 flex flex-wrap items-center gap-4 justify-between shadow-glow">
+      <div class="flex items-center gap-3">
+        <div class="grid place-items-center h-11 w-11 rounded-xl bg-gradient-to-br from-forge-500 to-ember-600 shadow-glow text-2xl select-none">⚒️</div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight">
+            <span class="forge-text">PromptFoundry</span>
+            <span class="text-slate-100">Local</span>
+          </h1>
+          <p class="text-[11px] sm:text-xs text-slate-400" data-i18n="subtitle">単語から、完璧なAIプロンプトを鋳造する。</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-mint-500/10 text-mint-400 border border-mint-500/25 px-3 py-1 text-xs font-semibold">
+          <span class="h-1.5 w-1.5 rounded-full bg-mint-400 pulse-dot"></span>
+          <span data-i18n="badgeLocal">100% Local</span>
+        </span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-ember-500/10 text-ember-400 border border-ember-500/25 px-3 py-1 text-xs font-semibold">
+          💸 <span data-i18n="badgeCost">API Cost $0</span>
+        </span>
+        <span id="deviceBadge" class="inline-flex items-center gap-1.5 rounded-full bg-forge-500/10 text-forge-300 border border-forge-500/25 px-3 py-1 text-xs font-semibold">
+          <span class="h-1.5 w-1.5 rounded-full bg-slate-500"></span><span data-i18n="deviceDetecting">検出中…</span>
+        </span>
+
+        <!-- Language selector -->
+        <div class="relative">
+          <select id="uiLang" aria-label="UI language"
+            class="appearance-none cursor-pointer rounded-full bg-ink-800 border border-white/10 pl-8 pr-7 py-1.5 text-xs font-semibold text-slate-200 hover:border-forge-500/40 focus:outline-none focus:ring-2 focus:ring-forge-500/40">
+          </select>
+          <span class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs">🌐</span>
+          <span class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">▾</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===================== MAIN GRID ===================== -->
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+      <!-- ---------- LEFT : INPUT ---------- -->
+      <section class="lg:col-span-4 glass rounded-2xl p-5 flex flex-col gap-4 h-fit">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+            <span class="text-forge-300">①</span><span data-i18n="inputLabel">あなたの意図</span>
+          </h2>
+          <button id="sampleBtn" class="text-[11px] text-slate-400 hover:text-forge-300 transition" data-i18n="sampleBtn">例を入れる</button>
+        </div>
+
+        <textarea id="intentInput" rows="6" spellcheck="false"
+          class="w-full rounded-xl glass-soft px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-forge-500/40 leading-relaxed"
+          data-i18n-ph="inputPlaceholder"
+          placeholder="例: 夕暮れ・海辺・猫・映画的・孤独"></textarea>
+
+        <!-- Mode -->
+        <div>
+          <p class="text-xs font-semibold text-slate-400 mb-2" data-i18n="modeLabel">鋳造モード</p>
+          <div id="modeGroup" class="grid grid-cols-3 gap-2 text-xs font-semibold">
+            <button data-mode="both"  class="mode-btn rounded-lg py-2 border transition" data-i18n="modeBoth">両方</button>
+            <button data-mode="image" class="mode-btn rounded-lg py-2 border transition" data-i18n="modeImage">画像</button>
+            <button data-mode="text"  class="mode-btn rounded-lg py-2 border transition" data-i18n="modeText">テキスト</button>
+          </div>
+        </div>
+
+        <!-- Output language -->
+        <div>
+          <label class="text-xs font-semibold text-slate-400 mb-1.5 block" data-i18n="outLangLabel">出力プロンプトの言語</label>
+          <div class="relative">
+            <select id="outLang"
+              class="appearance-none w-full cursor-pointer rounded-lg bg-ink-800 border border-white/10 px-3 py-2 text-sm text-slate-200 hover:border-forge-500/40 focus:outline-none focus:ring-2 focus:ring-forge-500/40"></select>
+            <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">▾</span>
+          </div>
+          <p class="text-[10px] text-slate-500 mt-1" data-i18n="imgEnNote">※ 画像プロンプトは互換性のため常に英語で鋳造されます。</p>
+        </div>
+
+        <!-- Model -->
+        <div>
+          <label class="text-xs font-semibold text-slate-400 mb-1.5 block" data-i18n="modelLabel">ローカルLLMモデル</label>
+          <div class="relative">
+            <select id="modelSelect"
+              class="appearance-none w-full cursor-pointer rounded-lg bg-ink-800 border border-white/10 px-3 py-2 text-sm text-slate-200 hover:border-forge-500/40 focus:outline-none focus:ring-2 focus:ring-forge-500/40">
+              <option value="onnx-community/Qwen2.5-0.5B-Instruct">Qwen2.5 0.5B — ⚡ 推奨・最速・軽量・全言語 (~0.4GB)</option>
+              <option value="onnx-community/Qwen2.5-1.5B-Instruct">Qwen2.5 1.5B — ⚖️ 高品質 (要・高性能GPU, ~1.1GB)</option>
+              <option value="onnx-community/Phi-3.5-mini-instruct-onnx-web">Phi-3.5 mini — 🧠 最高品質 (要・高性能GPU, ~2.1GB)</option>
+            </select>
+            <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">▾</span>
+          </div>
+          <p class="text-[10px] text-slate-500 mt-1" data-i18n="modelNote">初回のみブラウザにキャッシュ。以降はオフライン動作。</p>
+        </div>
+
+        <button id="forgeBtn"
+          class="btn-forge mt-1 w-full rounded-xl py-3.5 font-extrabold text-ink-950 text-sm tracking-wide flex items-center justify-center gap-2">
+          <span class="text-lg flip-x">⚒️</span><span data-i18n="forgeBtn">プロンプトを鋳造する</span>
+        </button>
+        <p class="text-[10px] text-center text-slate-500 -mt-1" data-i18n="privacyNote">入力はこの端末から一切送信されません。</p>
+      </section>
+
+      <!-- ---------- CENTER : STATUS ---------- -->
+      <section class="lg:col-span-4 glass rounded-2xl p-5 flex flex-col gap-4">
+        <h2 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+          <span class="text-forge-300">②</span><span data-i18n="statusLabel">AI意図予測ステータス</span>
+        </h2>
+
+        <!-- Engine state -->
+        <div class="glass-soft rounded-xl p-4">
+          <div class="flex items-center gap-2 mb-2">
+            <span id="engineDot" class="h-2.5 w-2.5 rounded-full bg-slate-600"></span>
+            <span id="statusText" class="text-sm font-semibold text-slate-200" data-i18n="statusIdle">待機中 — エンジン未起動</span>
+          </div>
+          <!-- Progress -->
+          <div id="progressWrap" class="hidden mt-3">
+            <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+              <span id="progressLabel" data-i18n="downloading">モデルをダウンロード中…</span>
+              <span id="progressPct" class="font-mono text-forge-300">0%</span>
+            </div>
+            <div class="progress-track h-2.5 rounded-full overflow-hidden">
+              <div id="progressBar" class="progress-bar h-full w-0 rounded-full"></div>
+            </div>
+            <p id="progressFile" class="text-[10px] text-slate-500 mt-1 truncate font-mono"></p>
+          </div>
+        </div>
+
+        <!-- Live stream -->
+        <div class="glass-soft rounded-xl p-4 flex-1 min-h-[220px] flex flex-col">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[11px] uppercase tracking-wider text-slate-500 font-bold" data-i18n="liveLabel">推論ライブビュー</span>
+            <span class="text-[10px] text-mint-400 font-mono">on-device</span>
+          </div>
+          <pre id="liveStream" class="text-xs text-slate-300 whitespace-pre-wrap font-mono leading-relaxed overflow-auto flex-1"></pre>
+        </div>
+
+        <!-- Savings -->
+        <div class="glass-soft rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] text-slate-400" data-i18n="savedTotal">この端末での累計削減コスト</p>
+            <p class="text-2xl font-extrabold text-mint-400 font-mono" id="savedTotal">$0.00</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[11px] text-slate-400" data-i18n="forgeCount">鋳造回数</p>
+            <p class="text-2xl font-extrabold text-slate-200 font-mono" id="forgeCount">0</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- RIGHT : OUTPUT ---------- -->
+      <section class="lg:col-span-4 flex flex-col gap-5">
+
+        <!-- Image card -->
+        <article id="imageCard" class="glass rounded-2xl p-5 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">🎨 <span data-i18n="imgCardTitle">画像生成プロンプト</span></h3>
+            <button data-copy="imgPromptOut" class="copy-btn text-[11px] rounded-lg bg-forge-500/10 border border-forge-500/30 text-forge-300 px-2.5 py-1 font-semibold hover:bg-forge-500/20 transition" data-i18n="copyBtn">コピー</button>
+          </div>
+          <p class="text-[10px] text-slate-500" data-i18n="imgCardSub">Midjourney / Stable Diffusion 用 (English)</p>
+          <pre id="imgPromptOut" class="text-xs text-slate-200 whitespace-pre-wrap font-mono leading-relaxed min-h-[60px] glass-soft rounded-lg p-3" data-i18n="emptyOut">— まだ鋳造されていません —</pre>
+
+          <div class="flex items-center justify-between mt-1">
+            <span class="text-[10px] uppercase tracking-wider text-ember-400 font-bold" data-i18n="negTitle">ネガティブプロンプト</span>
+            <button data-copy="negPromptOut" class="copy-btn text-[10px] rounded-lg bg-ember-500/10 border border-ember-500/30 text-ember-400 px-2 py-0.5 font-semibold hover:bg-ember-500/20 transition" data-i18n="copyBtn">コピー</button>
+          </div>
+          <pre id="negPromptOut" class="text-[11px] text-slate-400 whitespace-pre-wrap font-mono leading-relaxed glass-soft rounded-lg p-3 min-h-[36px]"></pre>
+
+          <div class="flex items-center gap-2 text-[10px] pt-1">
+            <span class="rounded-full bg-mint-500/10 text-mint-400 border border-mint-500/25 px-2 py-0.5 font-semibold">🔒 100% Local</span>
+            <span class="rounded-full bg-ember-500/10 text-ember-400 border border-ember-500/25 px-2 py-0.5 font-semibold"><span data-i18n="saved">削減</span> <span class="saved-amt">$0.00</span></span>
+          </div>
+        </article>
+
+        <!-- Text card -->
+        <article id="textCard" class="glass rounded-2xl p-5 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">💬 <span data-i18n="textCardTitle">テキスト生成プロンプト</span></h3>
+            <button data-copy="textPromptOut" class="copy-btn text-[11px] rounded-lg bg-forge-500/10 border border-forge-500/30 text-forge-300 px-2.5 py-1 font-semibold hover:bg-forge-500/20 transition" data-i18n="copyBtn">コピー</button>
+          </div>
+          <p class="text-[10px] text-slate-500" data-i18n="textCardSub">ChatGPT / Claude 用 — 構造化プロンプト</p>
+          <pre id="textPromptOut" class="text-xs text-slate-200 whitespace-pre-wrap leading-relaxed min-h-[80px] glass-soft rounded-lg p-3" data-i18n="emptyOut">— まだ鋳造されていません —</pre>
+          <div class="flex items-center gap-2 text-[10px] pt-1">
+            <span class="rounded-full bg-mint-500/10 text-mint-400 border border-mint-500/25 px-2 py-0.5 font-semibold">🔒 100% Local</span>
+            <span class="rounded-full bg-ember-500/10 text-ember-400 border border-ember-500/25 px-2 py-0.5 font-semibold"><span data-i18n="saved">削減</span> <span class="saved-amt">$0.00</span></span>
+          </div>
+        </article>
+
+        <!-- System / philosophy card -->
+        <article id="systemCard" class="glass rounded-2xl p-5 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">⚙️ <span data-i18n="sysCardTitle">システム設定プロンプト</span></h3>
+            <button data-copy="sysPromptOut" class="copy-btn text-[11px] rounded-lg bg-forge-500/10 border border-forge-500/30 text-forge-300 px-2.5 py-1 font-semibold hover:bg-forge-500/20 transition" data-i18n="copyBtn">コピー</button>
+          </div>
+          <p class="text-[10px] text-slate-500" data-i18n="sysCardSub">3つの哲学 — ローカル完結・データ主権・コスト削減</p>
+          <pre id="sysPromptOut" class="text-[11px] text-slate-300 whitespace-pre-wrap leading-relaxed min-h-[60px] glass-soft rounded-lg p-3" data-i18n="emptyOut">— まだ鋳造されていません —</pre>
+        </article>
+
+      </section>
+    </main>
+
+    <footer class="text-center text-[11px] text-slate-600 mt-8 pb-6">
+      <p>PromptFoundry Local · WebGPU + Transformers.js · <span data-i18n="footerTag">外部通信なし / 運営コスト0円 / 情報漏洩0%</span></p>
+    </footer>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden">
+    <div class="glass shadow-glow rounded-full px-5 py-2.5 text-sm font-semibold text-mint-400 flex items-center gap-2">
+      <span>✅</span><span id="toastMsg">コピーしました</span>
+    </div>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
