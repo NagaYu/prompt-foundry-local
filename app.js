@@ -592,6 +592,16 @@ async function forge() {
     persist();
     renderSavings();
 
+    // Replace the raw streaming text with a clean completion summary, so the
+    // finished state always looks polished (the raw stream is only "live" detail).
+    const ran = [];
+    if (state.mode !== 'text')  ran.push(`• 🎨 ${t('imgCardTitle')}`);
+    if (state.mode !== 'image') ran.push(`• 💬 ${t('textCardTitle')}`);
+    ran.push(`• ⚙️ ${t('sysCardTitle')}`);
+    els.liveStream.textContent =
+      `✓ ${t('stDone')}\n\n${ran.join('\n')}\n\n` +
+      `${state.device === 'webgpu' ? '⚡ WebGPU' : '🧩 WASM'} · 100% on-device · API $0`;
+
     setStatus('stDone', { ok: true });
   } catch (err) {
     console.error(err);

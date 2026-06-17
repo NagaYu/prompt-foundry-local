@@ -3,7 +3,7 @@
  * The (large) model weights are cached separately by Transformers.js itself,
  * so we deliberately do NOT duplicate them here.
  */
-const VERSION = 'pfl-v1';
+const VERSION = 'pfl-v2';
 const SHELL = [
   './',
   './index.html',
@@ -43,13 +43,29 @@ self.addEventListener('fetch', (event) => {
   const isRuntimeCDN = RUNTIME_HOSTS.some((h) => url.hostname.endsWith(h));
   if (!sameOrigin && !isRuntimeCDN) return; // let everything else go straight to network
 
-  // Stale-while-revalidate: serve cache instantly, refresh in background.
+  if (sameOrigin) {
+    // App shell: NETWORK-FIRST so deployed updates always win when online,
+    // falling back to cache only when offline. Keeps the app fresh + offline-capable.
+    event.respondWith((async () => {
+      const cache = await caches.open(VERSION);
+      try {
+        const res = await fetch(request);
+        if (res && res.ok) cache.put(request, res.clone());
+        return res;
+      } catch {
+        return (await cache.match(request)) || new Response('Offline', { status: 503, statusText: 'Offline' });
+      }
+    })());
+    return;
+  }
+
+  // Versioned CDN library (e.g. jsdelivr@3.5.1): CACHE-FIRST — immutable, saves bandwidth.
   event.respondWith((async () => {
     const cache = await caches.open(VERSION);
-    const cached = await cache.match(request, { ignoreSearch: false });
-    const network = fetch(request)
-      .then((res) => { if (res && res.ok) cache.put(request, res.clone()); return res; })
-      .catch(() => null);
-    return cached || (await network) || new Response('Offline', { status: 503, statusText: 'Offline' });
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    const res = await fetch(request).catch(() => null);
+    if (res && res.ok) cache.put(request, res.clone());
+    return res || new Response('Offline', { status: 503, statusText: 'Offline' });
   })());
 });
