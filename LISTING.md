@@ -10,7 +10,7 @@ honest, comps-based pricing recommendation. Replace the **[bracketed]** placehol
 **Business / asset name:** PromptFoundry Local
 
 **Tagline (1 line):**
-> The first 100%-on-device AI prompt forge — turns a few words into perfect image, text & system prompts. $0 to run, 0% data leakage, forever.
+> A 100%-on-device AI prompt forge — turn a few words into perfect image, text & system prompts. $0 to run, 0% data leakage, with margins that *improve* as it scales.
 
 **Category:** AI / Developer Tools / Productivity (Web app — code & IP asset)
 
@@ -38,7 +38,7 @@ PromptFoundry Local closes that divide by running the intelligence **on the user
 A robustness layer (coherence guard + deterministic, localized templates) guarantees professional output even on tiny models. The whole thing is an installable, offline-capable PWA.
 
 **Why it's special — inverted unit economics.**
-There is **no inference server**, so there is **no marginal cost per prompt — ever.** As usage grows, serving cost stays flat at zero and gross margin approaches 100%. User input **never leaves the browser**, making the compliance story (GDPR/HIPAA-adjacent) trivial. Full 9-language UI (incl. RTL Arabic) makes it globally distributable on day one.
+There is **no inference server**, so there is **no marginal cost per prompt — ever.** Where every competitor's serving bill grows with usage, here it stays flat at zero and gross margin approaches 100% as you scale. User input **never leaves the browser**, so the compliance story (GDPR/HIPAA-adjacent) is trivial by construction. A full 9-language UI (incl. RTL Arabic) makes it globally distributable on day one.
 
 **What you're buying.**
 A complete, polished, *working* codebase with a genuinely novel architecture and a clean acquisition narrative — ready to embed, white-label, or monetize.
